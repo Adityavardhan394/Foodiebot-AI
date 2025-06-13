@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodieBot - Restaurant Discovery & Ordering | Nagaram Dammiguda</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    <link rel="manifest" href="assets/site.webmanifest">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <meta name="description" content="Discover restaurants near Nagaram Dammiguda, browse menus, order food online with secure payment">
+    <meta name="keywords" content="food delivery, restaurants Nagaram, Dammiguda restaurants, online food order, QR code ordering">
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header with Logo and Location -->
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo-wrapper">
+                    <div class="logo-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>FoodieBot</h1>
+                        <span id="orderMode">Restaurant Discovery & Ordering</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="location-info" id="locationInfo">
+                <div class="current-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="location-text">
+                        <span class="location-label">Delivering to</span>
+                        <span class="location-name">Nagaram, Dammiguda</span>
+                    </div>
+                    <button class="change-location-btn" id="changeLocation">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Info for QR Code Orders -->
+            <div class="table-info hidden" id="tableInfo">
+                <div class="table-display">
+                    <i class="fas fa-chair"></i>
+                    <div class="table-text">
+                        <span class="table-label">Table</span>
+                        <span class="table-number" id="tableNumber">-</span>
+                    </div>
+                </div>
+                <div class="restaurant-name-header" id="restaurantNameHeader">Restaurant Name</div>
+            </div>
+
+            <div class="header-actions">
+                <button class="action-btn" id="qrGeneratorBtn" title="Generate QR Code">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+                <button class="action-btn" id="cartBtn" title="View Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count hidden" id="cartCount">0</span>
+                </button>
+                <div class="status-indicator">
+                    <div class="status-dot online"></div>
+                    <span>Online</span>
+                </div>
+                <button class="action-btn" id="toggleTheme" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Chat Interface -->
+        <main class="chat-container">
+            <div class="chat-header">
+                <div class="bot-avatar">
+                    <div class="avatar-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="typing-indicator hidden">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="chat-info">
+                    <h3>FoodieBot Assistant</h3>
+                    <p id="chatDescription">Finding restaurants near you in Nagaram-Dammiguda</p>
+                </div>
+                <div class="chat-actions">
+                    <button class="action-btn" id="clearChat" title="Clear Chat">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button class="action-btn" id="searchNearby" title="Find Nearby Restaurants">
+                        <i class="fas fa-search-location"></i>
+                    </button>
+                    <button class="action-btn hidden" id="callWaiter" title="Call Waiter">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-message">
+                    <div class="welcome-animation">
+                        <div class="location-icon">📍</div>
+                        <h2>Welcome to FoodieBot!</h2>
+                        <p>Discover amazing restaurants near Nagaram & Dammiguda. I can help you:</p>
+                        <div class="feature-grid">
+                            <div class="feature-item">
+                                <i class="fas fa-search"></i>
+                                <span>Find Nearby Restaurants</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-utensils"></i>
+                                <span>Browse Menus & Prices</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Order & Track Food</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Secure Payment</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-qrcode"></i>
+                                <span>QR Code Ordering</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-motorcycle"></i>
+                                <span>Fast Delivery</span>
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" data-message="Show me nearby restaurants">🍽️ Find Restaurants</button>
+                            <button class="quick-btn" data-message="What's popular in my area?">⭐ Popular Foods</button>
+                            <button class="quick-btn" data-message="Show me vegetarian restaurants">🥗 Vegetarian Options</button>
+                            <button class="quick-btn" data-message="I want fast food">🍔 Fast Food</button>
+                            <button class="quick-btn" data-message="Show me Indian restaurants">🍛 Indian Cuisine</button>
+                            <button class="quick-btn" data-message="What restaurants deliver here?">🚚 Delivery Options</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <button class="attachment-btn" title="Add Photo">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    <div class="message-input-container">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Search for restaurants, cuisines, or dishes near you..." 
+                            rows="1"
+                            maxlength="500"
+                        ></textarea>
+                        <div class="input-actions">
+                            <button class="location-btn" title="Use Current Location" id="useLocation">
+                                <i class="fas fa-crosshairs"></i>
+                            </button>
+                            <button class="voice-btn" title="Voice Search">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="send-btn" id="sendBtn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span class="character-count">0/500</span>
+                    <span class="powered-by">Powered by FoodieBot AI • <span id="footerLocation">Nagaram-Dammiguda</span></span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Restaurant Cards Container -->
+        <div class="restaurants-container hidden" id="restaurantsContainer">
+            <div class="restaurants-header">
+                <h3>Restaurants Near You</h3>
+                <div class="filter-options">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="rating">Top Rated</button>
+                    <button class="filter-btn" data-filter="delivery">Fast Delivery</button>
+                    <button class="filter-btn" data-filter="offers">Offers</button>
+                </div>
+            </div>
+            <div class="restaurants-grid" id="restaurantsGrid">
+                <!-- Restaurant cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Background Animations -->
+        <div class="background-animation">
+            <div class="floating-icon" style="--delay: 0s;">🍕</div>
+            <div class="floating-icon" style="--delay: 2s;">🍔</div>
+            <div class="floating-icon" style="--delay: 4s;">🍜</div>
+            <div class="floating-icon" style="--delay: 6s;">🥗</div>
+            <div class="floating-icon" style="--delay: 8s;">🍰</div>
+            <div class="floating-icon" style="--delay: 10s;">☕</div>
+            <div class="floating-icon" style="--delay: 12s;">🍛</div>
+            <div class="floating-icon" style="--delay: 14s;">🍣</div>
+        </div>
+
+        <!-- QR Code Generator Modal -->
+        <div class="modal hidden" id="qrGeneratorModal">
+            <div class="modal-content qr-generator-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-qrcode"></i> Restaurant QR Code Generator</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="qr-generator-sections">
+                        <div class="restaurant-selection">
+                            <h4>Select Restaurant</h4>
+                            <select id="restaurantSelect" class="restaurant-select">
+                                <option value="">Choose a restaurant...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="table-setup">
+                            <h4>Table Information</h4>
+                            <div class="table-inputs">
+                                <div class="input-group">
+                                    <label for="tableNumber">Table Number</label>
+                                    <input type="text" id="tableNumberInput" placeholder="e.g., T1, Table 5, A-12" maxlength="10">
+                                </div>
+                                <div class="input-group">
+                                    <label for="sectionName">Section (Optional)</label>
+                                    <input type="text" id="sectionName" placeholder="e.g., Outdoor, VIP, Main Hall" maxlength="20">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="qr-preview">
+                            <h4>QR Code Preview</h4>
+                            <div class="qr-code-container">
+                                <canvas id="qrCodeCanvas"></canvas>
+                                <div class="qr-placeholder">
+                                    <i class="fas fa-qrcode"></i>
+                                    <p>Select restaurant and table to generate QR code</p>
+                                </div>
+                            </div>
+                            <div class="qr-info hidden" id="qrInfo">
+                                <p><strong>Restaurant:</strong> <span id="qrRestaurantName"></span></p>
+                                <p><strong>URL:</strong> <span id="qrUrl"></span></p>
+                                <p><strong>Generated:</strong> <span id="qrGeneratedTime"></span></p>
+                                <p class="qr-instructions">Customers can scan this QR code to order directly from their table</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary close-modal">Close</button>
+                    <button class="btn-primary" id="generateQrBtn" disabled>Generate QR Code</button>
+                    <button class="btn-primary hidden" id="downloadQrBtn">Download QR Code</button>
+                    <button class="btn-secondary hidden" id="printQrBtn">Print QR Code</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Number Input Modal (for QR code access) -->
+        <div class="modal hidden" id="tableNumberModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-chair"></i> Welcome to <span id="restaurantNameModal">Restaurant</span></h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-confirmation">
+                        <p>Please confirm your table number:</p>
+                        <div class="table-number-display">
+                            <i class="fas fa-chair"></i>
+                            <span class="table-number-large" id="tableNumberDisplay">T1</span>
+                        </div>
+                        <p class="table-help">If this is not your table, please scan the correct QR code at your table.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="wrongTable">Wrong Table</button>
+                    <button class="btn-primary" id="confirmTable">Confirm & Start Ordering</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Modal -->
+        <div class="modal hidden" id="cartModal">
+            <div class="modal-content cart-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="cartItems"></div>
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="cartSubtotal">₹0.00</span>
+                        </div>
+                        <div class="summary-row" id="deliveryFeeRow">
+                            <span>Delivery Fee:</span>
+                            <span id="deliveryFee">₹30.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Taxes:</span>
+                            <span id="taxAmount">₹0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span><strong>Total:</strong></span>
+                            <span id="cartTotal"><strong>₹30.00</strong></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="continueShopping">Continue Shopping</button>
+                    <button class="btn-primary" id="proceedToCheckout">Proceed to Checkout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div class="modal hidden" id="checkoutModal">
+            <div class="modal-content checkout-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-credit-card"></i> Checkout</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="checkout-sections">
+                        <div class="order-type-section" id="orderTypeSection">
+                            <h4><i class="fas fa-motorcycle"></i> Order Type</h4>
+                            <div class="order-type-options">
+                                <label class="order-type-option">
+                                    <input type="radio" name="orderType" value="delivery" checked>
+                                    <span class="order-type-label">
+                                        <i class="fas fa-motorcycle"></i>
+                                        <div>
+                                            <strong>Delivery</strong>
+                                            <small>Get it delivered to your location</small>
+                                        </div>
+                                    </span>
+                                </label>
+                                <label class="order-type-option">
+                                    <input type="radio" name="orderType" value="takeaway">
+                                    <span class="order-type-label">
+                                        <i class="fas fa-shopping-bag"></i>
+                                        <div>
+                                            <strong>Take Away</strong>
+                                            <small>Pick up from restaurant</small>
+                                        </div>
+                                    </span>
+                                </label>
+                                <label class="order-type-option">
+                                    <input type="radio" name="orderType" value="dine-in">
+                                    <span class="order-type-label">
+                                        <i class="fas fa-utensils"></i>
+                                        <div>
+                                            <strong>Dine In</strong>
+                                            <small>Serve at your table</small>
+                                        </div>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="delivery-section" id="deliverySection">
+                            <h4><i class="fas fa-map-marker-alt"></i> Delivery Address</h4>
+                            <div class="address-display" id="deliveryAddress">
+                                <p><strong>Current Location:</strong></p>
+                                <p>Nagaram, Dammiguda, Hyderabad</p>
+                                <button class="btn-link" id="changeAddress">Change Address</button>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-section">
+                            <h4><i class="fas fa-credit-card"></i> Payment Method</h4>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="card" checked>
+                                    <span class="payment-label">
+                                        <i class="fas fa-credit-card"></i>
+                                        Credit/Debit Card
+                                    </span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="upi">
+                                    <span class="payment-label">
+                                        <i class="fab fa-google-pay"></i>
+                                        UPI (GPay/PhonePe/Paytm)
+                                    </span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="cod">
+                                    <span class="payment-label">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <span id="codLabel">Cash on Delivery</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="backToCart">Back to Cart</button>
+                    <button class="btn-primary" id="placeOrder">
+                        <i class="fas fa-check"></i>
+                        Place Order • <span id="finalTotal">₹0.00</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Change Modal -->
+        <div class="modal hidden" id="locationModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-map-marker-alt"></i> Change Location</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="location-search">
+                        <input type="text" id="locationSearch" placeholder="Enter your area, landmark, or pincode">
+                        <button class="btn-primary" id="detectLocation">
+                            <i class="fas fa-crosshairs"></i>
+                            Detect Location
+                        </button>
+                    </div>
+                    <div class="suggested-locations">
+                        <h4>Popular Areas:</h4>
+                        <div class="location-chips">
+                            <button class="location-chip active" data-location="Nagaram, Dammiguda">Nagaram, Dammiguda</button>
+                            <button class="location-chip" data-location="Uppal, Hyderabad">Uppal</button>
+                            <button class="location-chip" data-location="Kompally, Hyderabad">Kompally</button>
+                            <button class="location-chip" data-location="Bachupally, Hyderabad">Bachupally</button>
+                            <button class="location-chip" data-location="Tarnaka, Hyderabad">Tarnaka</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary close-modal">Cancel</button>
+                    <button class="btn-primary" id="confirmLocation">Confirm Location</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay hidden" id="loadingOverlay">
+            <div class="loading-content">
+                <div class="loading-animation">
+                    <div class="delivery-bike">🛵</div>
+                </div>
+                <p id="loadingText">Finding restaurants near you...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Error handling for script loading
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+            return false;
+        };
+
+        // Show loading overlay while scripts are loading
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+    </script>
+
+    <!-- Load QR code library first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Load scripts in correct order -->
+    <script src="js/chatbot.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/location.js"></script>
+    <script src="js/payment.js"></script>
+    <script src="js/qr-code.js"></script>
+
+    <script>
+        // Hide loading overlay when everything is loaded
+        window.addEventListener('load', function() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
