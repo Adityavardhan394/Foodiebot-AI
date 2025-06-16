@@ -8,19 +8,55 @@
     <!-- Base href for GitHub Pages -->
     <base href="/Foodiebot-AI/">
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="./assets/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
-    <link rel="manifest" href="./assets/site.webmanifest">
     
     <!-- Styles -->
     <link rel="stylesheet" href="./styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- SEO Meta Tags -->
     <meta name="description" content="Discover restaurants near Nagaram Dammiguda, browse menus, order food online with secure payment">
     <meta name="keywords" content="food delivery, restaurants Nagaram, Dammiguda restaurants, online food order, QR code ordering">
+    <meta name="author" content="FoodieBot AI">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="FoodieBot - AI Restaurant Discovery & Ordering">
+    <meta property="og:description" content="Discover amazing restaurants near Nagaram & Dammiguda with AI-powered recommendations">
+    <meta property="og:image" content="./assets/og-image.png">
+    <meta property="og:url" content="https://foodiebot.com">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FoodieBot - AI Restaurant Discovery">
+    <meta name="twitter:description" content="Order food from the best restaurants near you">
+    <meta name="twitter:image" content="./assets/twitter-card.png">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' wss: ws:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <!-- Performance Hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://api.foodiebot.com">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#ff6b35">
+    <meta name="msapplication-TileColor" content="#ff6b35">
+    
     <!-- QR Code Library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
@@ -152,6 +188,9 @@
                             <button class="quick-btn" data-message="I want fast food">🍔 Fast Food</button>
                             <button class="quick-btn" data-message="Show me Indian restaurants">🍛 Indian Cuisine</button>
                             <button class="quick-btn" data-message="What restaurants deliver here?">🚚 Delivery Options</button>
+                        </div>
+                        <div class="tip-message">
+                            💡 <strong>Tip:</strong> Click "🍽️ Find Restaurants" above to see restaurant cards, then click "View Menu" on any restaurant to browse their full menu!
                         </div>
                     </div>
                 </div>
@@ -479,12 +518,28 @@
 
         // Show loading overlay while scripts are loading
         document.getElementById('loadingOverlay').classList.remove('hidden');
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
     </script>
 
     <!-- Load QR code library first -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Load scripts in correct order -->
+    <script src="./js/error-handler.js"></script>
+    <script src="./js/performance-optimizer.js"></script>
+    <script src="./js/security-manager.js"></script>
     <script src="./js/chatbot.js"></script>
     <script src="./js/main.js"></script>
     <script src="./js/animations.js"></script>
@@ -496,6 +551,39 @@
         // Hide loading overlay when everything is loaded
         window.addEventListener('load', function() {
             document.getElementById('loadingOverlay').classList.add('hidden');
+        });
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button or banner
+            const installBanner = document.createElement('div');
+            installBanner.innerHTML = `
+                <div style="position: fixed; bottom: 20px; left: 20px; right: 20px; background: #ff6b35; color: white; padding: 1rem; border-radius: 10px; z-index: 10000; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Install FoodieBot for a better experience!</span>
+                    <button id="installBtn" style="background: white; color: #ff6b35; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">Install</button>
+                    <button id="dismissBtn" style="background: none; border: none; color: white; cursor: pointer; margin-left: 10px;">&times;</button>
+                </div>
+            `;
+            document.body.appendChild(installBanner);
+
+            document.getElementById('installBtn').addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredPrompt = null;
+                    installBanner.remove();
+                });
+            });
+
+            document.getElementById('dismissBtn').addEventListener('click', () => {
+                installBanner.remove();
+            });
         });
     </script>
 </body>
